@@ -20,7 +20,8 @@ Service artifacts are runnable JARs with embedded Tomcat.
 
 They accept some configuration options via command-line flags.
 
-* `etcd` - etcd endpoint (default: `http://127.0.0.1:2379`)
-* `server.address` - the address to publish for service discovery
-  (default: `127.0.0.1`)
-* `server.port` - the port to run on and publish for service discovery
+Flag | Description | Default
+---- | ----------- | -------
+`etcd` | etcd endpoint | `http://127.0.0.1:2379`
+`server.address` | address to publish for service discovery | `127.0.0.1`
+`server.port` | port to run on and publish for service discovery |
