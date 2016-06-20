@@ -1,0 +1,11 @@
+default.etcd/
+build/
+.gradle/
+
+*.jar
+!gradle-wrapper.jar
+
+*.class
+*.war
+*.ear
+hs_err_pid*

@@ -1,0 +1,4 @@
+spring.main.show_banner: false
+service.name: producer
+server.port: 8082
+etcd: http://127.0.0.1:2379
