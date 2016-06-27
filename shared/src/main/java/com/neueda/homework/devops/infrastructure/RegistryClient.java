@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -26,6 +24,9 @@ public class RegistryClient {
 
     @Autowired
     private RegistryResource registryResource;
+
+    @Autowired
+    private ResourceFactory resourceFactory;
 
     @Autowired
     @Qualifier("endpoint")
@@ -94,11 +95,7 @@ public class RegistryClient {
     @SuppressWarnings("unchecked")
     private <T> Optional<T> getResource(String endpoint, Class<T> resourceClass) {
         try {
-            Object resource = resourceCache.get(endpoint, () -> new Retrofit.Builder()
-                .baseUrl(endpoint)
-                .addConverterFactory(JacksonConverterFactory.create(objectMapper))
-                .build()
-                .create(resourceClass));
+            Object resource = resourceCache.get(endpoint, () -> resourceFactory.create(endpoint, resourceClass));
             return Optional.of((T) resource);
         } catch (ExecutionException e) {
             logger.error("Creating client for {} failed: {}", endpoint, e.getMessage());

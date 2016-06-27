@@ -25,12 +25,22 @@ class RegistryConfig {
     private String etcdEndpoint;
 
     @Bean
-    RegistryResource registryResource() {
-        return new Retrofit.Builder()
-            .baseUrl(etcdEndpoint)
-            .addConverterFactory(JacksonConverterFactory.create(objectMapper))
-            .build()
-            .create(RegistryResource.class);
+    ResourceFactory resourceFactory() {
+        return new ResourceFactory() {
+            @Override
+            public <T> T create(String endpoint, Class<T> resourceClass) {
+                return new Retrofit.Builder()
+                    .baseUrl(endpoint)
+                    .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+                    .build()
+                    .create(resourceClass);
+            }
+        };
+    }
+
+    @Bean
+    RegistryResource registryResource(ResourceFactory resourceFactory) {
+        return resourceFactory.create(etcdEndpoint, RegistryResource.class);
     }
 
     @Bean
