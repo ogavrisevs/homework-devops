@@ -1,0 +1,57 @@
+#
+### Author: Oskars Gavrisevs
+#
+### Run :
+# `docker-compose up `
+#
+### Healtcheck :
+# * Ensure booth service [consumer / producer ] are registered in etcd :
+#  `http 127.0.0.1:8801/v2/keys/services`
+#
+# * Ensure producer and consumer started embedded Tomcat :
+#  `http 127.0.0.1:8081`
+#  `http 127.0.0.1:8882`
+#
+# * Check is messages are exchanged (stats are piling up ):
+#   `http 127.0.0.1:8881/statistics`
+
+
+version: '2'
+
+services:
+  git-repo:
+    image: alpine
+    working_dir: /github
+    command: sh -c "apk add --no-cache git && [ ! -d 'homework-devops' ] && git clone https://github.com/neueda/homework-devops.git"
+    volumes:
+      - /github
+      - /root/.gradle
+  consumer:
+      image: java:8-jdk
+      working_dir: /github
+      command: bash -c "[ -d 'homework-devops' ] && cd homework-devops && ./gradlew consumer:clean consumer:build && java -jar ./consumer/build/libs/consumer-1.0.jar --server.address=consumer --etcd=http://etcd-1:8001"
+      restart: on-failure:10
+      ports:
+         - 8881:8081
+      volumes_from:
+         - git-repo
+      depends_on:
+         - git-repo
+         - etcd-1
+  producer:
+      image: java:8-jdk
+      working_dir: /github
+      command: bash -c "[ -d 'homework-devops' ] && cd homework-devops && ./gradlew producer:clean producer:build && java -jar ./producer/build/libs/producer-1.0.jar --server.address=producer --etcd=http://etcd-1:8001"
+      restart: on-failure:10
+      ports:
+         - 8882:8082
+      volumes_from:
+         - git-repo
+      depends_on:
+         - git-repo
+         - etcd-1
+  etcd-1:
+      image: microbox/etcd:latest
+      command: -peer-addr etcd-1:5001 -addr etcd-1:8001 -name etcd1
+      ports:
+        - 8801:8001
